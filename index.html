@@ -744,14 +744,10 @@ function setDisplay(val) {
 // Format a number to at most 12 significant digits
 function fmtNum(n) {
   if (!isFinite(n)) return '0';
-  // Detect if integer
   if (Number.isInteger(n) && Math.abs(n) < 1e12) {
-    return String(n) + '.';
+    return String(n);
   }
-  // Float — up to 12 sig digits
   let s = parseFloat(n.toPrecision(12)).toString();
-  // If no decimal, add dot
-  if (!s.includes('.') && !s.includes('e')) s += '.';
   return s;
 }
 
@@ -814,35 +810,35 @@ function press(k) {
 
 /* ---- DIGIT ---- */
 function doDigit(d) {
-  S.konstant = null; // typing a new digit clears K (unless we just set it)
+  S.konstant = null;
   if (S.newEntry) {
-    S.display = (d === '0') ? '0.' : d + '.';
+    S.display  = d;
     S.newEntry = false;
+    S.hasDot   = false;
   } else {
-    // Remove trailing dot for length check
     let raw = S.display.replace('.','').replace('-','');
     if (raw.length >= MAX_DIGITS) return;
-    // Insert before trailing dot
-    if (S.display.endsWith('.')) {
-      S.display = S.display.slice(0, -1) + d + '.';
-    } else {
-      S.display += d;
-    }
+    S.display += d;
   }
-  S.justOp  = false;
-  S.justEq  = false;
-  S.muBase  = null;
+  S.justOp = false;
+  S.justEq = false;
+  S.muBase = null;
   refreshDisplay();
 }
+
 
 function do000() { doDigit('0'); doDigit('0'); doDigit('0'); }
 
 /* ---- DOT ---- */
 function doDot() {
-  if (S.newEntry) { S.display = '0.'; S.newEntry = false; refreshDisplay(); return; }
-  if (S.display.includes('.')) return;
-  // Already has digits — just ensure dot is there
-  // (display always ends with dot in our format for whole numbers)
+  if (S.newEntry) {
+    S.display  = '0.';
+    S.newEntry = false;
+    refreshDisplay();
+    return;
+  }
+  if (S.display.includes('.')) return; // already has a dot, ignore
+  S.display += '.';
   refreshDisplay();
 }
 
@@ -983,19 +979,34 @@ function doNegate() {
 //  • With pending + or −: computes A % of B (e.g. 200 + 10 % → 200 + 20)
 //  • With pending × or ÷: converts to decimal (e.g. 200 × 10 % → 200 × 0.1)
 //  • Standalone: divides by 100
+
 function doPct() {
   const cur = getCurrentNum();
   let result;
   if (S.pendingOp === '+' || S.pendingOp === '−') {
-    result = S.operand * cur / 100;
+    // e.g. 1000 − 10% → computes 1000 - (1000×10/100) = 900, shows immediately
+    const pctAmount = S.operand * cur / 100;
+    result = compute(S.operand, S.pendingOp, pctAmount);
+    pushStep(fmtNum(S.operand) + S.pendingOp + fmtNum(cur) + '%', result);
+    S.grandTotal += result;
+    S.operand    = result;
+    S.pendingOp  = null;
+    S.justOp     = false;
+    S.justEq     = true;
+    S.newEntry   = true;
+    setDisplay(result);
   } else if (S.pendingOp === '×' || S.pendingOp === '÷') {
+    // e.g. 1000 × 10% → 1000 × 0.1, just convert and leave for = to finish
     result = cur / 100;
+    S.display  = fmtNum(result);
+    S.newEntry = false;
+    refreshDisplay();
   } else {
+    // Standalone: 500% → 5
     result = cur / 100;
+    setDisplay(result);
+    S.newEntry = true;
   }
-  S.display  = fmtNum(result);
-  S.newEntry = false; // leave ready for = to pick up
-  refreshDisplay();
 }
 
 /* ---- SQRT ---- */
