@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Casio MJ-12D</title>
+<style>
+/* ============================================================
+   CASIO MJ-12D — Faithful Web Emulator
+   Single file, zero dependencies, works fully offline.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --body-bg:        #18191a;
+  --calc-top:       #e8e0d4;
+  --calc-body:      #d4cdc4;
+  --calc-bottom:    #c8c0b4;
+  --calc-shadow:    #8a847a;
+  --brand-red:      #cc2222;
+  --solar-bg:       #1a1a1a;
+  --solar-cell:     #2a3a1a;
+  --disp-bg:        #b8cca0;
+  --disp-text:      #0a1a04;
+  --disp-dim:       #4a6a2a;
+  --disp-off:       #9ab88a;
+  --key-black-top:  #4a4a4a;
+  --key-black-bot:  #2a2a2a;
+  --key-black-shd:  #111;
+  --key-blue-top:   #2255aa;
+  --key-blue-bot:   #143380;
+  --key-blue-shd:   #0a1a44;
+  --key-red-top:    #cc3333;
+  --key-red-bot:    #881111;
+  --key-red-shd:    #440000;
+  --key-green-top:  #448833;
+  --key-green-bot:  #224411;
+  --key-green-shd:  #112208;
+  --key-lt-top:     #b8b0a8;
+  --key-lt-bot:     #9a9088;
+  --key-lt-shd:     #6a6058;
+  --key-orange-top: #cc7722;
+  --key-orange-bot: #884400;
+  --key-orange-shd: #442200;
+  --key-eq-top:     #dd9900;
+  --key-eq-bot:     #996600;
+  --key-eq-shd:     #553300;
+  --font-mono: 'Courier New', 'Lucida Console', monospace;
+  --font-label: 'Arial Narrow', Arial, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background: var(--body-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-label);
+  -webkit-tap-highlight-color: transparent;
+  background-image:
+    radial-gradient(ellipse at 20% 30%, #222 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, #111 0%, transparent 60%);
+}
+
+/* ============ CALCULATOR SHELL ============ */
+.calc-shell {
+  width: 320px;
+  border-radius: 10px 10px 16px 16px;
+  background: linear-gradient(170deg, var(--calc-top) 0%, var(--calc-body) 40%, var(--calc-bottom) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 2px 0 1px rgba(255,255,255,0.3) inset,
+    0 -2px 0 1px rgba(0,0,0,0.2) inset,
+    6px 6px 20px rgba(0,0,0,0.6),
+    -2px -2px 8px rgba(255,255,255,0.15),
+    0 30px 60px rgba(0,0,0,0.8);
+  padding-bottom: 16px;
+  position: relative;
+  user-select: none;
+}
+
+/* ============ BRAND HEADER ============ */
+.brand-header {
+  background: linear-gradient(180deg, #f0e8e0 0%, #e0d8d0 100%);
+  border-radius: 10px 10px 0 0;
+  padding: 10px 14px 8px;
+  border-bottom: 2px solid rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.brand-left { display: flex; flex-direction: column; gap: 2px; }
+
+.brand-casio {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: var(--brand-red);
+  line-height: 1;
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.15);
+}
+
+.brand-tagline {
+  font-size: 7px;
+  letter-spacing: 2.5px;
+  color: #555;
+  font-weight: bold;
+}
+
+.brand-right { text-align: right; }
+
+.model-number {
+  font-size: 15px;
+  font-weight: 900;
+  color: #333;
+  letter-spacing: 1px;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.model-sub {
+  font-size: 7px;
+  color: #777;
+  letter-spacing: 1.5px;
+  margin-top: 1px;
+}
+
+/* ============ SOLAR PANEL ============ */
+.solar-panel {
+  margin: 6px 14px;
+  background: var(--solar-bg);
+  border-radius: 3px;
+  padding: 4px 5px;
+  display: flex;
+  gap: 3px;
+  border: 1px solid #333;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.solar-cell {
+  flex: 1;
+  height: 10px;
+  background: linear-gradient(180deg, #1e3010 0%, #0a1a08 100%);
+  border-radius: 1px;
+  border: 1px solid #0a0a0a;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.05);
+}
+
+/* ============ DISPLAY ============ */
+.display-wrap {
+  margin: 6px 12px 4px;
+  background: #1a1a18;
+  border-radius: 5px;
+  padding: 4px;
+  box-shadow:
+    inset 0 3px 10px rgba(0,0,0,0.9),
+    inset 0 1px 3px rgba(0,0,0,0.8),
+    0 1px 0 rgba(255,255,255,0.1);
+}
+
+.display-screen {
+  background: var(--disp-bg);
+  border-radius: 3px;
+  padding: 6px 8px 5px;
+  position: relative;
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.15),
+    0 1px 0 rgba(255,255,255,0.3);
+}
+
+/* Indicator row */
+.disp-indicators {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 3px;
+  min-height: 12px;
+}
+
+.ind {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--disp-off);
+  letter-spacing: 0.3px;
+  transition: color 0.1s;
+}
+
+.ind.on { color: var(--disp-text); }
+.ind.k  { font-weight: bold; font-size: 10px; }
+
+.ind-spacer { flex: 1; }
+
+.ind-op {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--disp-off);
+  min-width: 10px;
+  text-align: right;
+}
+.ind-op.on { color: var(--disp-text); }
+
+/* Main number */
+.disp-number {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  color: var(--disp-text);
+  text-align: right;
+  letter-spacing: 3px;
+  line-height: 1;
+  min-height: 34px;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+/* Steps / check row */
+.disp-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3px;
+  min-height: 11px;
+}
+
+.disp-steps {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--disp-dim);
+  letter-spacing: 0.5px;
+}
+
+.disp-mode {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--disp-off);
+}
+.disp-mode.on { color: var(--disp-dim); }
+
+/* ============ KEY AREA ============ */
+.key-area { padding: 8px 10px 4px; }
+
+/* A row of keys */
+.key-row {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+  justify-content: center;
+}
+
+/* Base key style */
+.key {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: filter 0.04s, transform 0.04s;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.key:active { filter: brightness(1.35); transform: translateY(1px) scale(0.98); }
+.key.flash  { filter: brightness(1.5); }
+
+/* Key sizes */
+.k-sm  { width: 52px; height: 26px; }
+.k-md  { width: 52px; height: 36px; }
+.k-lg  { width: 109px; height: 36px; } /* double wide */
+.k-eq  { width: 52px; height: 77px; } /* double tall = */
+
+/* Key colors */
+.k-black {
+  background: linear-gradient(180deg, var(--key-black-top) 0%, var(--key-black-bot) 100%);
+  box-shadow: 0 4px 0 var(--key-black-shd), 0 5px 8px rgba(0,0,0,0.5);
+  color: #eee;
+}
+.k-blue {
+  background: linear-gradient(180deg, var(--key-blue-top) 0%, var(--key-blue-bot) 100%);
+  box-shadow: 0 4px 0 var(--key-blue-shd), 0 5px 8px rgba(0,0,0,0.5);
+  color: #cce0ff;
+}
+.k-red {
+  background: linear-gradient(180deg, var(--key-red-top) 0%, var(--key-red-bot) 100%);
+  box-shadow: 0 4px 0 var(--key-red-shd), 0 5px 8px rgba(0,0,0,0.5);
+  color: #ffcccc;
+}
+.k-green {
+  background: linear-gradient(180deg, var(--key-green-top) 0%, var(--key-green-bot) 100%);
+  box-shadow: 0 4px 0 var(--key-green-shd), 0 5px 8px rgba(0,0,0,0.5);
+  color: #ccffcc;
+}
+.k-lt {
+  background: linear-gradient(180deg, var(--key-lt-top) 0%, var(--key-lt-bot) 100%);
+  box-shadow: 0 4px 0 var(--key-lt-shd), 0 5px 8px rgba(0,0,0,0.3);
+  color: #222;
+}
+.k-orange {
+  background: linear-gradient(180deg, var(--key-orange-top) 0%, var(--key-orange-bot) 100%);
+  box-shadow: 0 4px 0 var(--key-orange-shd), 0 5px 8px rgba(0,0,0,0.5);
+  color: #ffd8aa;
+}
+.k-yellow {
+  background: linear-gradient(180deg, var(--key-eq-top) 0%, var(--key-eq-bot) 100%);
+  box-shadow: 0 4px 0 var(--key-eq-shd), 0 5px 8px rgba(0,0,0,0.5);
+  color: #fff8cc;
+}
+
+/* Key label text */
+.key-main {
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.3px;
+}
+.key-main.lg { font-size: 16px; }
+.key-main.xl { font-size: 20px; }
+.key-main.sm { font-size: 10px; }
+.key-main.xs { font-size: 8.5px; letter-spacing: 0; }
+
+/* Secondary label above key */
+.key-top-label {
+  font-size: 7.5px;
+  color: #aaccff;
+  position: absolute;
+  top: -14px;
+  letter-spacing: 0.5px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.key-top-label.orange { color: #ffcc88; }
+
+/* Sub-label inside key (bottom small text) */
+.key-sub {
+  font-size: 7px;
+  opacity: 0.7;
+  margin-top: 1px;
+  letter-spacing: 0;
+}
+
+/* MU key secondary label */
+.mu-label {
+  font-size: 7px;
+  color: #ffcc88;
+  position: absolute;
+  top: -14px;
+  font-weight: bold;
+}
+
+/* ============ BOTTOM LABEL ============ */
+.calc-footer {
+  text-align: center;
+  margin-top: 6px;
+  font-size: 7px;
+  color: #888;
+  letter-spacing: 2px;
+}
+
+/* ============ CHECK PANEL ============ */
+.check-panel {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  border-radius: 10px;
+  flex-direction: column;
+  z-index: 100;
+  padding: 12px;
+}
+.check-panel.open { display: flex; }
+
+.check-title {
+  color: #88cc44;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.check-list {
+  flex: 1;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #bbd8aa;
+  list-style: none;
+}
+
+.check-list li {
+  padding: 3px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.check-list li.active { background: rgba(136,204,68,0.15); color: #ccff88; }
+.check-list li .step-n { color: #667755; font-size: 9px; min-width: 24px; }
+.check-list li .step-val { text-align: right; }
+
+.check-close {
+  margin-top: 8px;
+  background: #334422;
+  color: #88cc44;
+  border: 1px solid #446633;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* ============ ERROR flash ============ */
+@keyframes errFlash {
+  0%,100% { background: var(--disp-bg); }
+  50%      { background: #d0e8b0; }
+}
+.screen-flash { animation: errFlash 0.25s ease 2; }
+
+/* Scrollbar for check list */
+.check-list::-webkit-scrollbar { width: 4px; }
+.check-list::-webkit-scrollbar-track { background: transparent; }
+.check-list::-webkit-scrollbar-thumb { background: #446633; border-radius: 2px; }
+
+</style>
+</head>
+<body>
+
+<div class="calc-shell" id="calcShell">
+
+  <!-- ===== CHECK MODE OVERLAY ===== -->
+  <div class="check-panel" id="checkPanel">
+    <div class="check-title">▶ CHECK &amp; CORRECT — STEP HISTORY</div>
+    <ul class="check-list" id="checkList"></ul>
+    <div class="check-close" onclick="closeCheckPanel()">CLOSE [C]</div>
+  </div>
+
+  <!-- ===== BRAND HEADER ===== -->
+  <div class="brand-header">
+    <div class="brand-left">
+      <div class="brand-casio">CASIO</div>
+      <div class="brand-tagline">TWIN POWER</div>
+    </div>
+    <div class="brand-right">
+      <div class="model-number">MJ-12D</div>
+      <div class="model-sub">CHECK &amp; CORRECT</div>
+      <div class="model-sub" style="margin-top:1px;">12 DIGITS</div>
+    </div>
+  </div>
+
+  <!-- ===== SOLAR PANEL ===== -->
+  <div class="solar-panel">
+    <div class="solar-cell"></div><div class="solar-cell"></div>
+    <div class="solar-cell"></div><div class="solar-cell"></div>
+    <div class="solar-cell"></div><div class="solar-cell"></div>
+    <div class="solar-cell"></div><div class="solar-cell"></div>
+    <div class="solar-cell"></div><div class="solar-cell"></div>
+  </div>
+
+  <!-- ===== DISPLAY ===== -->
+  <div class="display-wrap">
+    <div class="display-screen" id="dispScreen">
+
+      <div class="disp-indicators">
+        <span class="ind" id="indM">M</span>
+        <span class="ind k" id="indK">K</span>
+        <span class="ind" id="indGT">GT</span>
+        <span class="ind-spacer"></span>
+        <span class="ind" id="indE">E</span>
+        <span class="ind-op" id="indOp">&nbsp;</span>
+      </div>
+
+      <div class="disp-number" id="dispNum">0.</div>
+
+      <div class="disp-bottom">
+        <span class="disp-steps" id="dispSteps"></span>
+        <span class="disp-mode" id="dispMode">TAX&nbsp;OFF</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== KEYS ===== -->
+  <div class="key-area">
+
+    <!-- Row 1: GT  MRC  M-  M+  ÷ -->
+    <div class="key-row" style="margin-top:18px;">
+      <button class="key k-sm k-green" onclick="press('GT')">
+        <span class="key-main sm">GT</span>
+      </button>
+      <button class="key k-sm k-green" onclick="press('MRC')">
+        <span class="key-main sm">MRC</span>
+      </button>
+      <button class="key k-sm k-blue" onclick="press('M-')">
+        <span class="key-main sm">M&minus;</span>
+      </button>
+      <button class="key k-sm k-blue" onclick="press('M+')">
+        <span class="key-main sm">M+</span>
+      </button>
+      <button class="key k-sm k-red" onclick="press('AC')">
+        <span class="key-main sm">AC</span>
+      </button>
+    </div>
+
+    <!-- Row 2: CHECK  CORRECT  %  √  CE/C -->
+    <div class="key-row" style="margin-top:6px;">
+      <button class="key k-sm k-lt" onclick="press('CHECK')">
+        <span class="key-main xs">CHECK</span>
+      </button>
+      <button class="key k-sm k-lt" onclick="press('CORRECT')">
+        <span class="key-main xs">CORR</span>
+      </button>
+      <button class="key k-sm k-lt" onclick="press('%')">
+        <span class="key-main sm">%</span>
+      </button>
+      <button class="key k-sm k-lt" onclick="press('√')">
+        <span class="key-main sm">√</span>
+      </button>
+      <button class="key k-sm k-orange" onclick="press('CE')">
+        <span class="key-main xs">CE/C</span>
+      </button>
+    </div>
+
+    <!-- MU label floats above row 3 first key -->
+    <div style="display:flex;gap:5px;padding:0 0 0 0;margin-bottom:0;justify-content:center;margin-top:12px;">
+      <div style="width:52px;text-align:center;font-size:7.5px;color:#ffcc88;font-weight:bold;letter-spacing:0.5px;">MU</div>
+      <div style="width:52px;"></div>
+      <div style="width:52px;"></div>
+      <div style="width:52px;"></div>
+      <div style="width:52px;"></div>
+    </div>
+
+    <!-- Row 3: 7  8  9  DEL  ÷ -->
+    <div class="key-row">
+      <button class="key k-md k-black" onclick="press('7')">
+        <span class="key-main lg">7</span>
+      </button>
+      <button class="key k-md k-black" onclick="press('8')">
+        <span class="key-main lg">8</span>
+      </button>
+      <button class="key k-md k-black" onclick="press('9')">
+        <span class="key-main lg">9</span>
+      </button>
+      <button class="key k-md k-lt" onclick="press('DEL')">
+        <span class="key-main xs">DEL</span>
+      </button>
+      <button class="key k-md k-blue" onclick="press('÷')">
+        <span class="key-main xl">÷</span>
+      </button>
+    </div>
+
+    <!-- Row 4: 4  5  6  +/-  × -->
+    <div class="key-row">
+      <button class="key k-md k-black" onclick="press('4')">
+        <span class="key-main lg">4</span>
+      </button>
+      <button class="key k-md k-black" onclick="press('5')">
+        <span class="key-main lg">5</span>
+      </button>
+      <button class="key k-md k-black" onclick="press('6')">
+        <span class="key-main lg">6</span>
+      </button>
+      <button class="key k-md k-lt" onclick="press('+/-')">
+        <span class="key-main xs">+/&minus;</span>
+      </button>
+      <button class="key k-md k-blue" onclick="press('×')">
+        <span class="key-main xl">×</span>
+      </button>
+    </div>
+
+    <!-- Row 5+6: 1 2 3 | = (tall) | -
+                  0(wide) . | + -->
+    <div style="display:flex;gap:5px;justify-content:center;">
+
+      <!-- Left 4 cols: 1 2 3 / 0(wide) . -->
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;gap:5px;">
+          <button class="key k-md k-black" onclick="press('1')">
+            <span class="key-main lg">1</span>
+          </button>
+          <button class="key k-md k-black" onclick="press('2')">
+            <span class="key-main lg">2</span>
+          </button>
+          <button class="key k-md k-black" onclick="press('3')">
+            <span class="key-main lg">3</span>
+          </button>
+          <button class="key k-md k-lt" onclick="press('000')">
+            <span class="key-main xs">000</span>
+          </button>
+        </div>
+        <div style="display:flex;gap:5px;">
+          <button class="key k-lg k-black" onclick="press('0')">
+            <span class="key-main lg">0</span>
+          </button>
+          <button class="key k-md k-black" onclick="press('.')">
+            <span class="key-main lg">.</span>
+          </button>
+          <button class="key k-md k-blue" onclick="press('+')">
+            <span class="key-main xl">+</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right col: − on top, = (tall) below -->
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <button class="key k-md k-blue" onclick="press('−')">
+          <span class="key-main xl">&minus;</span>
+        </button>
+        <button class="key k-eq k-yellow" onclick="press('=')">
+          <span class="key-main xl">=</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div><!-- /key-area -->
+
+  <div class="calc-footer">TWIN POWER · CHECK &amp; CORRECT · 12 DIGITS</div>
+
+</div><!-- /calc-shell -->
+
+<script>
+/* ================================================================
+   CASIO MJ-12D — Complete Logic Engine
+   Features:
+     ✓ 12-digit display
+     ✓ Constant (K) calculation — × = trick, ÷ = trick etc.
+     ✓ Chain operations
+     ✓ Grand Total (GT)
+     ✓ Memory: MRC (single press = recall, double press = clear), M+, M−
+     ✓ MU (Markup/Margin) — Casio MU behaviour
+     ✓ % — Casio percentage behaviour
+     ✓ √ square root
+     ✓ +/- sign toggle
+     ✓ CE/C — clears entry
+     ✓ DEL — backspace
+     ✓ 000 — triple zero
+     ✓ CHECK — 150-step scrollable history
+     ✓ CORRECT — edit a step in history
+     ✓ Error on divide-by-zero
+     ✓ Keyboard support
+================================================================ */
+
+const MAX_DIGITS = 12;
+const MAX_STEPS  = 150;
+
+let S = freshState();
+
+function freshState() {
+  return {
+    display:       '0',      // what's shown (string)
+    pendingOp:     null,     // '+' '−' '×' '÷'
+    operand:       null,     // left-hand operand (number)
+    konstant:      null,     // { op, value } — K constant
+    newEntry:      true,     // next digit starts fresh
+    justOp:        false,    // last press was an operator
+    justEq:        false,    // last press was =
+    memory:        0,
+    grandTotal:    0,
+    error:         false,
+    mrcPressCount: 0,        // for double-press MRC=clear
+    history:       [],       // [{type,expr,value,display}]
+    checkOpen:     false,
+    muBase:        null,     // for MU feature
+  };
+}
+
+/* ============ DOM refs ============ */
+const dispNum   = document.getElementById('dispNum');
+const dispSteps = document.getElementById('dispSteps');
+const indM      = document.getElementById('indM');
+const indK      = document.getElementById('indK');
+const indGT     = document.getElementById('indGT');
+const indE      = document.getElementById('indE');
+const indOp     = document.getElementById('indOp');
+const dispScreen= document.getElementById('dispScreen');
+const checkPanel= document.getElementById('checkPanel');
+const checkList = document.getElementById('checkList');
+
+/* ============ DISPLAY UPDATE ============ */
+function refreshDisplay() {
+  let d = S.display;
+
+  // Show error
+  if (S.error) {
+    dispNum.textContent = 'E';
+    indE.classList.add('on');
+  } else {
+    indE.classList.remove('on');
+    // Format number nicely
+    dispNum.textContent = formatDisplay(d);
+  }
+
+  // Indicators
+  indM.classList.toggle('on',  S.memory !== 0);
+  indK.classList.toggle('on',  !!S.konstant);
+  indGT.classList.toggle('on', S.grandTotal !== 0);
+
+  // Op indicator
+  if (S.pendingOp) {
+    indOp.textContent = S.pendingOp;
+    indOp.classList.add('on');
+  } else {
+    indOp.textContent = '\u00a0';
+    indOp.classList.remove('on');
+  }
+
+  // Steps
+  if (S.history.length > 0) {
+    dispSteps.textContent = S.history.length + ' STEPS';
+  } else {
+    dispSteps.textContent = '';
+  }
+}
+
+function formatDisplay(str) {
+  // Always show trailing decimal point like Casio
+  let n = parseFloat(str);
+  if (isNaN(n)) return str;
+
+  let result = str;
+
+  // If it's a whole number from calculation, show as integer + dot
+  // If user is typing, show as-is
+  return result;
+}
+
+function setDisplay(val) {
+  if (!isFinite(val)) { S.error = true; S.display = '0'; refreshDisplay(); return; }
+  let str = fmtNum(val);
+  S.display = str;
+  refreshDisplay();
+}
+
+// Format a number to at most 12 significant digits
+function fmtNum(n) {
+  if (!isFinite(n)) return '0';
+  // Detect if integer
+  if (Number.isInteger(n) && Math.abs(n) < 1e12) {
+    return String(n) + '.';
+  }
+  // Float — up to 12 sig digits
+  let s = parseFloat(n.toPrecision(12)).toString();
+  // If no decimal, add dot
+  if (!s.includes('.') && !s.includes('e')) s += '.';
+  return s;
+}
+
+function getCurrentNum() {
+  let s = S.display.replace(/\.$/, '').replace(/,$/, '');
+  return parseFloat(s) || 0;
+}
+
+/* ============ HISTORY ============ */
+function pushStep(expr, value) {
+  if (S.history.length >= MAX_STEPS) S.history.shift();
+  S.history.push({ expr: expr, value: value, display: fmtNum(value) });
+}
+
+/* ============ ARITHMETIC ============ */
+function compute(a, op, b) {
+  switch(op) {
+    case '+': return a + b;
+    case '−': return a - b;
+    case '×': return a * b;
+    case '÷': return b === 0 ? Infinity : a / b;
+  }
+  return b;
+}
+
+/* ============ MAIN KEY HANDLER ============ */
+function press(k) {
+  if (S.error && k !== 'AC' && k !== 'CE') return;
+  if (S.checkOpen && k !== 'CHECK' && k !== 'CORRECT' && k !== 'AC') {
+    closeCheckPanel(); return;
+  }
+
+  // Reset MRC double-press counter on any key except MRC
+  if (k !== 'MRC') S.mrcPressCount = 0;
+
+  switch(k) {
+    case '0': case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7': case '8': case '9':
+      doDigit(k); break;
+    case '.':   doDot();      break;
+    case '000': do000();      break;
+    case '+': case '−': case '×': case '÷':
+      doOperator(k); break;
+    case '=':   doEquals();   break;
+    case 'AC':  doAC();       break;
+    case 'CE':  doCE();       break;
+    case 'DEL': doDEL();      break;
+    case 'M+':  doMplus();    break;
+    case 'M-':  doMminus();   break;
+    case 'MRC': doMRC();      break;
+    case 'GT':  doGT();       break;
+    case '%':   doPct();      break;
+    case '√':   doSqrt();     break;
+    case '+/-': doNegate();   break;
+    case 'MU':  doMU();       break;
+    case 'CHECK':   openCheckPanel();  break;
+    case 'CORRECT': doCorrect();       break;
+  }
+}
+
+/* ---- DIGIT ---- */
+function doDigit(d) {
+  S.konstant = null; // typing a new digit clears K (unless we just set it)
+  if (S.newEntry) {
+    S.display = (d === '0') ? '0.' : d + '.';
+    S.newEntry = false;
+  } else {
+    // Remove trailing dot for length check
+    let raw = S.display.replace('.','').replace('-','');
+    if (raw.length >= MAX_DIGITS) return;
+    // Insert before trailing dot
+    if (S.display.endsWith('.')) {
+      S.display = S.display.slice(0, -1) + d + '.';
+    } else {
+      S.display += d;
+    }
+  }
+  S.justOp  = false;
+  S.justEq  = false;
+  S.muBase  = null;
+  refreshDisplay();
+}
+
+function do000() { doDigit('0'); doDigit('0'); doDigit('0'); }
+
+/* ---- DOT ---- */
+function doDot() {
+  if (S.newEntry) { S.display = '0.'; S.newEntry = false; refreshDisplay(); return; }
+  if (S.display.includes('.')) return;
+  // Already has digits — just ensure dot is there
+  // (display always ends with dot in our format for whole numbers)
+  refreshDisplay();
+}
+
+/* ---- OPERATOR ---- */
+function doOperator(op) {
+  S.muBase = null;
+  const cur = getCurrentNum();
+
+  if (S.pendingOp && !S.newEntry && !S.justOp) {
+    // Chain: finish pending
+    const result = compute(S.operand, S.pendingOp, cur);
+    if (!isFinite(result)) { S.error = true; refreshDisplay(); return; }
+    pushStep(fmtNum(S.operand) + S.pendingOp + fmtNum(cur), result);
+    S.grandTotal += result;
+    S.operand = result;
+    setDisplay(result);
+  } else {
+    S.operand = cur;
+  }
+
+  S.pendingOp = op;
+  S.konstant  = null;
+  S.justOp    = true;
+  S.justEq    = false;
+  S.newEntry  = true;
+  refreshDisplay();
+}
+
+/* ---- EQUALS — the key constant logic ---- */
+function doEquals() {
+  S.muBase = null;
+
+  /* ── Case A: K constant already set → repeat operation ── */
+  if (S.konstant) {
+    const cur    = getCurrentNum();
+    const result = compute(cur, S.konstant.op, S.konstant.value);
+    if (!isFinite(result)) { S.error = true; refreshDisplay(); return; }
+    pushStep(fmtNum(cur) + S.konstant.op + fmtNum(S.konstant.value) + '=', result);
+    S.grandTotal += result;
+    setDisplay(result);
+    S.newEntry = true;
+    S.justEq   = true;
+    refreshDisplay();
+    return;
+  }
+
+  /* ── Case B: Operator pressed, then = immediately (Casio K trick) ──
+     e.g.  2 × =  →  computes 2×2, sets K=×2
+     e.g.  5 ÷ =  →  computes 5÷5, sets K=÷5           */
+  if (S.pendingOp && S.justOp) {
+    const base   = S.operand;
+    const op     = S.pendingOp;
+    const result = compute(base, op, base);
+    if (!isFinite(result)) { S.error = true; refreshDisplay(); return; }
+
+    // Set K constant: future = presses will do displayedValue op base
+    S.konstant  = { op: op, value: base };
+    pushStep(fmtNum(base) + op + fmtNum(base) + '= [K]', result);
+    S.grandTotal += result;
+    S.operand   = result;
+    S.pendingOp = null;
+    S.justOp    = false;
+    S.justEq    = true;
+    S.newEntry  = true;
+    setDisplay(result);
+    refreshDisplay();
+    return;
+  }
+
+  /* ── Case C: Normal A op B = result, then set K for repeats ── */
+  if (S.pendingOp) {
+    const b      = getCurrentNum();
+    const result = compute(S.operand, S.pendingOp, b);
+    if (!isFinite(result)) { S.error = true; refreshDisplay(); return; }
+
+    // After normal =, Casio sets K so next = repeats op with same b
+    S.konstant  = { op: S.pendingOp, value: b };
+    pushStep(fmtNum(S.operand) + S.pendingOp + fmtNum(b) + '=', result);
+    S.grandTotal += result;
+    S.operand   = result;
+    S.pendingOp = null;
+    S.justOp    = false;
+    S.justEq    = true;
+    S.newEntry  = true;
+    setDisplay(result);
+    refreshDisplay();
+    return;
+  }
+
+  /* ── Case D: no pending op — just finalize display ── */
+  setDisplay(getCurrentNum());
+  S.newEntry = true;
+}
+
+/* ---- AC ---- */
+function doAC() {
+  S = freshState();
+  closeCheckPanel();
+  refreshDisplay();
+}
+
+/* ---- CE/C ---- */
+function doCE() {
+  S.error   = false;
+  S.display = '0.';
+  S.newEntry= true;
+  // If no pending op, also clear operand
+  if (!S.pendingOp) S.operand = null;
+  refreshDisplay();
+}
+
+/* ---- DEL ---- */
+function doDEL() {
+  if (S.newEntry) return;
+  let d = S.display;
+  // Remove last character (keeping trailing dot if whole number)
+  if (d.endsWith('.')) {
+    // e.g. "123." → remove "3" → "12."
+    if (d.length <= 2) { S.display = '0.'; S.newEntry = true; }
+    else S.display = d.slice(0, -2) + '.';
+  } else {
+    S.display = d.slice(0, -1);
+    if (S.display === '' || S.display === '-') { S.display = '0.'; S.newEntry = true; }
+  }
+  refreshDisplay();
+}
+
+/* ---- NEGATE ---- */
+function doNegate() {
+  let n = getCurrentNum();
+  n = -n;
+  S.display = fmtNum(n);
+  refreshDisplay();
+}
+
+/* ---- PERCENT ---- */
+// Casio % behaviour:
+//  • With pending + or −: computes A % of B (e.g. 200 + 10 % → 200 + 20)
+//  • With pending × or ÷: converts to decimal (e.g. 200 × 10 % → 200 × 0.1)
+//  • Standalone: divides by 100
+function doPct() {
+  const cur = getCurrentNum();
+  let result;
+  if (S.pendingOp === '+' || S.pendingOp === '−') {
+    result = S.operand * cur / 100;
+  } else if (S.pendingOp === '×' || S.pendingOp === '÷') {
+    result = cur / 100;
+  } else {
+    result = cur / 100;
+  }
+  S.display  = fmtNum(result);
+  S.newEntry = false; // leave ready for = to pick up
+  refreshDisplay();
+}
+
+/* ---- SQRT ---- */
+function doSqrt() {
+  const n = getCurrentNum();
+  if (n < 0) { S.error = true; refreshDisplay(); return; }
+  const result = Math.sqrt(n);
+  pushStep('√' + fmtNum(n), result);
+  S.grandTotal += result;
+  setDisplay(result);
+  S.newEntry = true;
+  refreshDisplay();
+}
+
+/* ---- MEMORY ----  */
+
+
+function doMplus() {
+  // Finalize any pending operation first (like real Casio)
+  if (S.pendingOp && !S.newEntry) {
+    const b      = getCurrentNum();
+    const result = compute(S.operand, S.pendingOp, b);
+    if (!isFinite(result)) { S.error = true; refreshDisplay(); return; }
+    S.grandTotal += result;
+    S.konstant   = { op: S.pendingOp, value: b };
+    S.operand    = result;
+    S.pendingOp  = null;
+    S.justOp     = false;
+    S.justEq     = true;
+    S.newEntry   = true;
+    setDisplay(result);
+  }
+  const n = getCurrentNum();
+  S.memory += n;
+  pushStep('M+' + fmtNum(n), S.memory);
+  S.newEntry = true;
+  refreshDisplay();
+}
+
+
+function doMminus() {
+  // Finalize any pending operation first (like real Casio)
+  if (S.pendingOp && !S.newEntry) {
+    const b      = getCurrentNum();
+    const result = compute(S.operand, S.pendingOp, b);
+    if (!isFinite(result)) { S.error = true; refreshDisplay(); return; }
+    S.grandTotal += result;
+    S.konstant   = { op: S.pendingOp, value: b };
+    S.operand    = result;
+    S.pendingOp  = null;
+    S.justOp     = false;
+    S.justEq     = true;
+    S.newEntry   = true;
+    setDisplay(result);
+  }
+  const n = getCurrentNum();
+  S.memory -= n;
+  pushStep('M−' + fmtNum(n), S.memory);
+  S.newEntry = true;
+  refreshDisplay();
+}
+
+
+function doMRC() {
+  S.mrcPressCount++;
+  if (S.mrcPressCount === 1) {
+    // First press: recall
+    S.display  = fmtNum(S.memory);
+    S.newEntry = true;
+    refreshDisplay();
+  } else {
+    // Second press: clear memory
+    S.memory       = 0;
+    S.mrcPressCount= 0;
+    refreshDisplay();
+  }
+}
+
+/* ---- GRAND TOTAL ---- */
+function doGT() {
+  S.display  = fmtNum(S.grandTotal);
+  S.newEntry = true;
+  refreshDisplay();
+}
+
+/* ---- MU (Mark-Up) ----
+   Casio MU logic:
+   • First press after entering cost + entering sell price → calculates margin%
+   • e.g.  80 [op] 100 MU → markup = (100-80)/80 * 100 = 25%
+   Simpler common Casio pattern: A × B MU → B is sell, A is cost basis
+   We implement the standard two-step MU:
+     Step 1: Enter cost, press MU → stored as base
+     Step 2: Enter margin%, press MU → result is sell price
+   OR: Enter sell price when cost stored → get margin%            */
+function doMU() {
+  const cur = getCurrentNum();
+  if (S.muBase === null) {
+    // First MU: store as cost base
+    S.muBase   = cur;
+    S.display  = fmtNum(cur);
+    S.newEntry = true;
+    pushStep('MU base:' + fmtNum(cur), cur);
+  } else {
+    // Second MU:
+    // If cur looks like a percentage (< 100 typically), compute sell price
+    // sell = base / (1 - pct/100)  [margin mode]
+    // Or: sell = base * (1 + pct/100) [markup mode — Casio default]
+    const base = S.muBase;
+    let result;
+    if (cur < 100) {
+      // Treat as markup %: sell = base × (1 + pct/100)
+      result = base * (1 + cur / 100);
+    } else {
+      // Treat as sell price: compute markup %
+      result = (cur - base) / base * 100;
+    }
+    pushStep('MU ' + fmtNum(base) + '+' + fmtNum(cur) + '%', result);
+    S.grandTotal += result;
+    setDisplay(result);
+    S.newEntry = true;
+    S.muBase   = null;
+  }
+  refreshDisplay();
+}
+
+/* ================================================================
+   CHECK & CORRECT
+================================================================ */
+function openCheckPanel() {
+  if (S.history.length === 0) return;
+  S.checkOpen = true;
+
+  // Build list
+  checkList.innerHTML = '';
+  S.history.forEach((step, i) => {
+    const li = document.createElement('li');
+    li.innerHTML =
+      '<span class="step-n">' + (i+1) + '</span>' +
+      '<span class="step-expr" style="flex:1;padding:0 4px;font-size:10px;color:#88aa66;">' + step.expr + '</span>' +
+      '<span class="step-val">' + step.display + '</span>';
+    checkList.appendChild(li);
+  });
+
+  // Scroll to bottom
+  checkList.scrollTop = checkList.scrollHeight;
+  checkPanel.classList.add('open');
+}
+
+function closeCheckPanel() {
+  S.checkOpen = false;
+  checkPanel.classList.remove('open');
+}
+
+function doCorrect() {
+  // Casio CORRECT: deletes last entry in history
+  if (S.history.length > 0) {
+    S.history.pop();
+    refreshDisplay();
+  }
+  // If panel open, refresh
+  if (S.checkOpen) openCheckPanel();
+}
+
+/* ================================================================
+   KEYBOARD SUPPORT
+================================================================ */
+document.addEventListener('keydown', e => {
+  if (S.checkOpen) { closeCheckPanel(); return; }
+  const map = {
+    '0':'0','1':'1','2':'2','3':'3','4':'4',
+    '5':'5','6':'6','7':'7','8':'8','9':'9',
+    '.':'.','Enter':'=','=':'=',
+    '+':'+','-':'−','*':'×','/':'÷',
+    'Backspace':'DEL','Escape':'AC','Delete':'CE',
+    '%':'%','s':'√','S':'√',
+  };
+  if (map[e.key]) {
+    e.preventDefault();
+    press(map[e.key]);
+  }
+/*    }); */
+
+
+
+/* ================================================================
+   EXTRA KEYBOARD SHORTCUTS
+   Shift+6  →  √  (square root)
+   Shift+7  →  × =  (constant K square trick, one-shot)
+================================================================ */
+/*document.addEventListener('keydown', e => { */
+  // Shift+6 = ^ character → Square Root
+  if (e.shiftKey && e.key === '^') {
+    e.preventDefault();
+    press('√');
+    return;
+  }
+
+  // Shift+7 = & character → × then = (the K constant square trick)
+  if (e.shiftKey && e.key === '&') {
+    e.preventDefault();
+    press('×');
+    press('=');
+    return;
+  }
+});
+
+
+/* ================================================================
+   INIT
+================================================================ */
+refreshDisplay();
+</script>
+</body>
+</html>
